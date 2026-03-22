@@ -2,7 +2,9 @@ gunicorn
 flask
 pyotp
 flask-bcrypt
+flask-login
 flask-sqlalchemy
+requests
 anyio==4.11.0
 argon2-cffi==25.1.0
 argon2-cffi-bindings==25.1.0
