@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Registro - Seguridad</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                {% for cat, msg in messages %}
+                  <div class="alert alert-{{ cat }}">{{ msg }}</div>
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+
+            <div class="card p-4 shadow-sm">
+                <h3 class="text-center mb-4">Registro de Usuario</h3>
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Usuario</label>
+                        <input type="text" name="username" class="form-control" placeholder="Nombre de usuario" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Contraseña</label>
+                        <div class="input-group">
+                            <input type="password" name="password" id="passwordField" class="form-control" required>
+                            <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                👁️
+                            </button>
+                        </div>
+                        <small class="text-muted d-block mt-1">
+                            Mínimo 8 caracteres, 1 mayúscula, 1 número y 1 símbolo.
+                        </small>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label">Rol de acceso</label>
+                        <select name="role" class="form-select">
+                            <option value="USER">USER</option>
+                            <option value="ADMIN">ADMIN</option>
+                            <option value="AUDITOR">AUDITOR</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">Registrar</button>
+                </form>
+                
+                <div class="text-center mt-3">
+                    <a href="/login" class="text-decoration-none">¿Ya tienes cuenta? Login</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const togglePassword = document.querySelector('#togglePassword');
+        const passwordInput = document.querySelector('#passwordField');
+
+        togglePassword.addEventListener('click', function () {
+            const isPassword = passwordInput.getAttribute('type') === 'password';
+            passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
+            this.textContent = isPassword ? '🙈' : '👁️';
+        });
+    </script>
+</body>
+</html>
