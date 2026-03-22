@@ -75,7 +75,7 @@
 </footer>
 
 <script>
-    // Usamos el mismo sistema de persistencia vinculado al usuario
+ 
     const currentUser = "{{ current_user.username }}";
     const KEY = 'gv_cart_' + currentUser;
     window.cart = JSON.parse(localStorage.getItem(KEY)) || [];
@@ -107,7 +107,7 @@
 
     document.addEventListener('DOMContentLoaded', window.render);
 
-    // Al pagar con éxito, limpiamos el carrito
+   
     document.getElementById('checkout-form').addEventListener('submit', () => {
         localStorage.removeItem(KEY);
     });

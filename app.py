@@ -9,16 +9,16 @@ from models import db, User, AuditLog
 
 app = Flask(__name__)
 
-# --- CONFIGURACIÓN ---
+
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///seguridad.db'
 app.config['SECRET_KEY'] = 'umsa_informatica_ultra_secret'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# --- API THEGAMESDB ---
+
 API_KEY = "871220fc4b1070bcb1572f73fb50d5d9d9735736c427ece46c485ac4bae9bd54"
 BASE_URL = "https://api.thegamesdb.net/v1/"
 
-# --- INICIALIZACIÓN ---
+
 db.init_app(app)
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
@@ -28,7 +28,7 @@ login_manager.login_view = 'login'
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-# --- UTILIDADES DE SEGURIDAD (RBAC) ---
+
 def role_required(*roles):
     def wrapper(f):
         @wraps(f)
@@ -43,7 +43,7 @@ def role_required(*roles):
         return decorated_view
     return wrapper
 
-# --- RUTA PRINCIPAL CON FIX DE IMÁGENES ---
+
 @app.route('/')
 def index():
     query = request.args.get('name')
@@ -59,7 +59,7 @@ def index():
                 games_list = data.get('data', {}).get('games', [])
                 include = data.get('include', {})
                 if 'boxart' in include:
-                    # Extraemos la resolución 'large' para evitar errores 404
+                    
                     base_dict = include['boxart'].get('base_url', {})
                     base_img_url = base_dict.get('large', "") 
                     
@@ -87,7 +87,7 @@ def checkout():
     flash("🎮 ¡Compra exitosa! Revisa tu panel.", "success")
     return redirect(url_for('dashboard'))
 
-# --- RUTAS DE AUTENTICACIÓN ---
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':

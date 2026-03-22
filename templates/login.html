@@ -31,11 +31,11 @@
                         const password = document.querySelector('#passwordField');
 
                         togglePassword.addEventListener('click', function (e) {
-                            // Cambiar el tipo de input
+                            
                             const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
                             password.setAttribute('type', type);
                             
-                            // Cambiar el emoji del botón (opcional)
+                            
                             this.textContent = type === 'password' ? '👁️' : '🙈';
                         });
                     </script>
