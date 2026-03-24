@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>GameVault | Tienda Gamer</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body { background-color: #0d1117; color: #c9d1d9; font-family: 'Segoe UI', sans-serif; }
+        .navbar { border-bottom: 2px solid #66fcf1; background-color: #161b22 !important; }
+        .game-card { background: #161b22; border: 1px solid #30363d; border-radius: 12px; transition: 0.3s; height: 100%; overflow: hidden; }
+        .game-card:hover { border-color: #66fcf1; transform: translateY(-5px); }
+        .img-container { height: 200px; background: #000; overflow: hidden; }
+        .img-container img { width: 100%; height: 100%; object-fit: cover; }
+        .cart-box { position: sticky; top: 20px; background: #161b22; border: 1px solid #66fcf1; border-radius: 15px; padding: 20px; }
+        .btn-cyan { background-color: #66fcf1; color: #0b0e14; font-weight: bold; border: none; }
+        .vivid-msg { color: #66fcf1; font-weight: bold; text-shadow: 0 0 10px rgba(102,252,241,0.5); }
+        .remove-btn { color: #ff4d4d; cursor: pointer; border: none; background: none; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-dark sticky-top">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="/">GAME<span style="color:#66fcf1">VAULT</span></a>
+        <div class="d-flex align-items-center">
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-info btn-sm me-2">Mi Perfil</a>
+                
+                {% if current_user.role == 'ADMIN' %}
+                    <a href="{{ url_for('admin_panel') }}" class="btn btn-outline-warning btn-sm me-2">Administración</a>
+                {% else %}
+                    <button class="btn btn-outline-secondary btn-sm me-2" disabled>Administración</button>
+                {% endif %}
+
+                {% if current_user.role in ['ADMIN', 'AUDITOR'] %}
+                    <a href="{{ url_for('auditoria') }}" class="btn btn-outline-success btn-sm me-2">Auditoría</a>
+                {% else %}
+                    <button class="btn btn-outline-secondary btn-sm me-2" disabled>Auditoría</button>
+                {% endif %}
+
+                <a href="{{ url_for('logout') }}" class="btn btn-danger btn-sm ms-2">Salir</a>
+            {% else %}
+                <a href="{{ url_for('login') }}" class="btn btn-outline-info btn-sm me-2">Login</a>
+                <a href="{{ url_for('register') }}" class="btn btn-cyan btn-sm">Registrate</a>
+            {% endif %}
+        </div>
+    </div>
+</nav>
+
+<div class="container py-5">
+    <div class="row justify-content-center mb-5 text-center">
+        <div class="col-md-8">
+            <h1 class="display-4 fw-bold mb-4">Catálogo de <span style="color:#66fcf1">Poder</span></h1>
+            <form action="/" method="GET" class="input-group input-group-lg shadow">
+                <input type="text" name="name" class="form-control bg-dark text-white border-secondary" placeholder="Buscar juego..." required>
+                <button type="submit" class="btn btn-cyan">BUSCAR</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="row g-4">
+                {% if games %}
+                    {% for game in games %}
+                    <div class="col-md-6">
+                        <div class="card game-card">
+                            <div class="img-container">
+                                <img src="{{ base_img }}{{ game.image_path }}" onerror="this.src='https://via.placeholder.com/300x400/161b22/66fcf1?text=Sin+Imagen'">
+                            </div>
+                            <div class="card-body">
+                                <h5 class="text-white fw-bold">{{ game.game_title }}</h5>
+                                <p class="text-secondary small">{{ game.description[:90] if game.description else 'Cargando datos...' }}...</p>
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    <span class="text-success fw-bold">$59.99</span>
+                                    <button class="btn btn-cyan btn-sm" onclick="window.addToCart('{{ game.game_title }}', 59.99)">Añadir 🛒</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="col-12 text-center py-5">
+                        <h4 class="vivid-msg">🚀 Explora nuestro catálogo buscando un título arriba</h4>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="cart-box shadow-lg">
+                <h4 class="text-center border-bottom pb-2 mb-3">🛒 MI CARRITO</h4>
+                <div id="cart-list" style="min-height: 80px;"></div>
+                <div class="d-flex justify-content-between fs-5 fw-bold border-top pt-3 mt-3">
+                    <span>Total:</span> <span id="cart-total" class="text-success">$0.00</span>
+                </div>
+                <form action="/checkout" method="POST" class="mt-4" onsubmit="localStorage.removeItem('gv_cart_'+currentUser)">
+                    <button type="submit" class="btn btn-primary w-100 py-3 fw-bold">PROCEDER AL PAGO</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const currentUser = "{{ current_user.username if current_user.is_authenticated else 'guest' }}";
+    const KEY = 'gv_cart_' + currentUser;
+    window.cart = JSON.parse(localStorage.getItem(KEY)) || [];
+
+    window.addToCart = (n, p) => { window.cart.push({n, p}); window.render(); };
+    window.remove = (i) => { window.cart.splice(i, 1); window.render(); };
+    
+    window.render = () => {
+        localStorage.setItem(KEY, JSON.stringify(window.cart));
+        const list = document.getElementById('cart-list');
+        const totalDisp = document.getElementById('cart-total');
+        
+        if (window.cart.length === 0) {
+            list.innerHTML = `<p class="text-center py-4 vivid-msg">🛒 El carrito está vacío</p>`;
+            totalDisp.innerText = '$0.00';
+            return;
+        }
+
+        list.innerHTML = window.cart.map((item, index) => `
+            <div class="d-flex justify-content-between align-items-center mb-2 p-2 bg-dark rounded">
+                <span class="text-truncate small" style="max-width: 140px;">${item.n}</span>
+                <span><b class="small">$${item.p}</b> <button class="remove-btn" onclick="window.remove(${index})">X</button></span>
+            </div>
+        `).join('');
+        totalDisp.innerText = '$' + window.cart.reduce((s, i) => s + i.p, 0).toFixed(2);
+    };
+
+    document.addEventListener('DOMContentLoaded', window.render);
+</script>
+</body>
+</html>
